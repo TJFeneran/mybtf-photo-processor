@@ -1,0 +1,17 @@
+{
+  "name": "thumbnails",
+  "version": "1.0.0",
+  "description": "",
+  "main": "preview.js",
+  "dependencies": {
+    "aws-sdk": "^2.125.0",
+    "gm": "^1.23.0",
+    "utils": "^0.3.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
