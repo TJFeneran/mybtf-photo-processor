@@ -178,34 +178,41 @@ function getSQSMessage(callback) {
 				
 				receipthandle = data.Messages[0].ReceiptHandle;
 				var messagebody = JSON.parse(data.Messages[0].Body);
-
-				s3bucket = messagebody['Records'][0]['s3']['bucket']['name'];
-				s3key = messagebody['Records'][0]['s3']['object']['key'];
 				
-				//var tmpkeys = s3key.split("/");
-				//var filename = tmpkeys[tmpkeys.length-1];
-				//var newfilename = filename.replace(/\+/g,'\ ');
-				
-				//s3key = s3key.replace(filename,newfilename);
-				
-				if(s3key.indexOf('/raw/') > -1) {
+				if(messagebody['Records']) {
+					s3bucket = messagebody['Records'][0]['s3']['bucket']['name'];
+					s3key = messagebody['Records'][0]['s3']['object']['key'];
 					
-					processImage(s3bucket,s3key, function(response) {
-						if(response) {
-							deleteSQSMessage(receipthandle,function(deleted) {
-								callback("DONE");
-							});
-						} else {
-							callback("ERROR");
-						}
-					});
-				}	
-				else {
+					//var tmpkeys = s3key.split("/");
+					//var filename = tmpkeys[tmpkeys.length-1];
+					//var newfilename = filename.replace(/\+/g,'\ ');
+					
+					//s3key = s3key.replace(filename,newfilename);
+					
+					if(s3key.indexOf('/raw/') > -1) {
+						
+						processImage(s3bucket,s3key, function(response) {
+							if(response) {
+								deleteSQSMessage(receipthandle,function(deleted) {
+									callback("DONE");
+								});
+							} else {
+								callback("ERROR");
+							}
+						});
+					}	
+					else {
+						deleteSQSMessage(receipthandle, function(response) {
+							console.log("** Not a /raw/ image");
+							callback("DONE");
+						});
+								
+					}
+				} else {
 					deleteSQSMessage(receipthandle, function(response) {
-						console.log("** Not a /raw/ image");
+						console.log("** INVALID / TEST MESSAGE");
 						callback("DONE");
 					});
-							
 				}
 
 			} else {
