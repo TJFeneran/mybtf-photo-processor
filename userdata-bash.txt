@@ -1,0 +1,18 @@
+#!/bin/bash
+yum update -y
+curl --silent --location https://rpm.nodesource.com/setup_8.x | sudo bash -
+yum install git nodejs httpd24 ImageMagick GraphicsMagick -y
+service httpd start
+chkconfig httpd on
+groupadd wwww
+usermod -a -G www ec2-user
+chmod 2775 /var/www
+find /var/www -type d -exec chmod 2775 {} +
+find /var/www -type f -exec chmod 0664 {} +
+echo "Hello" > /var/www/html/index.html
+cd /home/ec2-user
+aws s3 cp s3://mybtf_photovideo/node-photo-processor.zip ./
+unzip node-photo-processor
+chown -R ec2-user:ec2-user node-photo-processor/*
+su ec2-user
+screen -d -m -S MyBTFPhotoProcessor sh -c 'node /home/ec2-user/node-photo-processor/sqs.js; exec /bin/bash'
