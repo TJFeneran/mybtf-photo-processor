@@ -23,9 +23,11 @@ function processImage(s3bucket,s3key,callback) {
 			
 			if(s3Image.Body) {	
 				
-				transformImage(s3Image.Body, 'preview', function(result1) {
+				var isradix = s3key.indexOf('radix/') > -1 ? true : false;
+				
+				transformImage(s3Image.Body, 'preview', isradix, function(result1) {
 					if(result1) {
-						transformImage(s3Image.Body, 'thumbs', function(result2) {
+						transformImage(s3Image.Body, 'thumbs', isradix, function(result2) {
 							if(result2) {
 								callback(true);
 							} else callback(false);
@@ -74,7 +76,7 @@ function getS3Image(s3bucket, s3key, callback) {
 	}
 }
 
-function transformImage(rawimage, thumbtype, callback) {	
+function transformImage(rawimage, thumbtype, isradix, callback) {	
 		
 	gm(rawimage).size(function(err, size) {
 		
@@ -82,9 +84,11 @@ function transformImage(rawimage, thumbtype, callback) {
 			width = 450;
 			height = size.width >= size.height ? 300 : 674;
 			
+			var watermark = isradix ? "/home/ec2-user/node-photo-processor/radix-watermark.png" : "/home/ec2-user/node-photo-processor/mybtf-watermark.png";
+			
 			this.gravity('center')
 	    		.resizeExact(width, height)
-	    		.draw(['gravity NorthWest image Plus 0,0 0,0 "/home/ec2-user/node-photo-processor/mybtf-watermark.png"'])
+	    		.draw(['gravity NorthWest image Plus 0,0 0,0 "'+watermark+'"'])
 	    		.quality(65)
 			    .toBuffer('JPG', function(err, buffer) {
 			    	var dstKey = s3key.replace('/raw/','/'+thumbtype+'/').replace('.JPG','.jpg');
@@ -178,7 +182,7 @@ function getSQSMessage(callback) {
 				
 				receipthandle = data.Messages[0].ReceiptHandle;
 				var messagebody = JSON.parse(data.Messages[0].Body);
-				
+
 				if(messagebody['Records']) {
 					s3bucket = messagebody['Records'][0]['s3']['bucket']['name'];
 					s3key = messagebody['Records'][0]['s3']['object']['key'];
