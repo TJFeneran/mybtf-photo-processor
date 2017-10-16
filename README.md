@@ -1,7 +1,7 @@
 # mybtf-photo-processor
 
 AWS Services used:
-1] EC2 (T2.small w/ Amazon Linux AMI)
+1] EC2 (T2.small w/ Amazon Linux AMI)\n
 2] SQS Queue
 
 Scripting Languages used:
